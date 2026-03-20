@@ -1,0 +1,4 @@
+1,Papas,20.0
+2,InKaCola,30.0
+3,Palomitas,40.0
+4,Chocolate,30.0
