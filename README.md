@@ -1,25 +1,29 @@
 # 🍿 Máquina de Snacks
 
-Una aplicación de consola en Java que simula una máquina expendedora de snacks interactiva. Este proyecto permite a los usuarios comprar snacks, ver su ticket de compra, y agregar nuevos productos al inventario.
+Una aplicación de consola en Java que simula una máquina expendedora de snacks interactiva. El proyecto cuenta con **dos implementaciones**: una versión inicial en memoria y una versión avanzada con persistencia en archivos, arquitectura por capas y uso de interfaces.
 
 ## 📋 Descripción
 
-Este proyecto implementa un sistema completo de máquina expendedora que gestiona un inventario de snacks, procesa compras y genera tickets de venta. La aplicación utiliza conceptos de programación orientada a objetos y manejo de colecciones en Java.
+Este proyecto implementa un sistema completo de máquina expendedora que gestiona un inventario de snacks, procesa compras y genera tickets de venta. A lo largo de su desarrollo, el proyecto evolucionó de una arquitectura monolítica a un diseño modular con separación de responsabilidades, aplicando principios clave de programación orientada a objetos como abstracción, encapsulación y polimorfismo.
 
 ## ✨ Características
 
 - **🛒 Compra de Snacks**: Selecciona snacks del inventario disponible usando su ID
-- **🧾 Generación de Tickets**: Visualiza un ticket detallado con todos los productos comprados y el total
+- **🧾 Generación de Tickets**: Visualiza un ticket detallado con todos los productos comprados y el total acumulado
 - **➕ Agregar Productos**: Añade nuevos snacks al inventario de forma dinámica
-- **📦 Inventario Predefinido**: Incluye snacks iniciales (Papas Lays, Maquis, Inka Cola)
+- **📋 Listar Inventario**: Consulta en cualquier momento los snacks disponibles
+- **💾 Persistencia en Archivos**: La versión avanzada guarda y carga el inventario desde un archivo `.txt`
+- **🔌 Diseño por Interfaces**: Permite intercambiar fácilmente entre persistencia en lista o en archivo
 - **🛡️ Manejo de Errores**: Validación de IDs y manejo de excepciones
 
 ## 🚀 Tecnologías Utilizadas
 
 - **Lenguaje**: Java
-- **Paradigma**: Programación Orientada a Objetos
-- **Colecciones**: ArrayList para gestión de inventario
-- **E/S**: Scanner para entrada de datos por consola
+- **Paradigma**: Programación Orientada a Objetos (POO)
+- **Colecciones**: `ArrayList`, `List` para gestión de inventario
+- **E/S**: `Scanner` para entrada de datos, `FileWriter` / `Files` para persistencia
+- **Serialización**: Interfaz `Serializable` en el modelo de dominio
+- **Diseño**: Interfaces, capas de arquitectura (Dominio, Servicio, Presentación)
 
 ## 📁 Estructura del Proyecto
 
@@ -27,124 +31,171 @@ Este proyecto implementa un sistema completo de máquina expendedora que gestion
 maquina_snacks/
 │
 ├── src/
-│   ├── MaquinaSnacks.java    # Clase principal con la lógica de la aplicación
-│   ├── Snack.java             # Modelo de datos para los snacks
-│   └── Snacks.java            # Gestión del inventario de snacks
+│   │
+│   ├── 📂 (Versión 1 - En Memoria)
+│   ├── MaquinaSnacks.java          # Clase principal con menú interactivo
+│   ├── Snack.java                  # Modelo de datos del snack
+│   └── Snacks.java                 # Gestión estática del inventario en memoria
 │
-└── out/                       # Archivos compilados
+│   ├── 📂 maquina_snacks_archivos/ (Versión 2 - Con persistencia)
+│   │   ├── dominio/
+│   │   │   └── Snack.java          # Modelo de dominio con método escribirSnack()
+│   │   ├── servicio/
+│   │   │   ├── IServicioSnacks.java          # Interfaz del servicio de snacks
+│   │   │   ├── ServicioSnacksLista.java      # Implementación con lista en memoria
+│   │   │   └── ServicioSnacksArchivos.java   # Implementación con persistencia en .txt
+│   │   └── presentacion/
+│   │       └── MaquinaSnacks.java  # Clase principal refactorizada (versión 2)
+│
+├── snacks.txt                      # Archivo de datos del inventario
+└── out/                            # Archivos compilados
 ```
 
 ## 🏗️ Arquitectura del Código
 
-### `Snack.java`
-- Clase modelo que representa un producto snack
-- Implementa `Serializable` para persistencia
-- Incluye generación automática de IDs
-- Sobrescribe `equals()`, `hashCode()` y `toString()`
+### Versión 1 — Inventario en Memoria
 
-### `Snacks.java`
-- Clase de utilidad para gestionar el inventario
-- Contiene una lista estática de snacks disponibles
-- Proporciona métodos para agregar y mostrar snacks
-- Inicializa el inventario con productos predefinidos
+| Clase | Descripción |
+|---|---|
+| `Snack.java` | Modelo de datos: ID autoincremental, nombre, precio. Implementa `Serializable`, `equals()`, `hashCode()` y `toString()` |
+| `Snacks.java` | Clase utilitaria con lista estática. Inicializa el inventario con snacks predefinidos y expone métodos para agregar y mostrar |
+| `MaquinaSnacks.java` | Clase principal. Gestiona el menú, las opciones del usuario y el flujo de compra mediante `switch` expressions |
 
-### `MaquinaSnacks.java`
-- Clase principal con el método `main()`
-- Implementa el menú interactivo de la aplicación
-- Gestiona el flujo de compra y generación de tickets
-- Manejo de excepciones y validaciones
+### Versión 2 — Arquitectura por Capas con Persistencia
+
+| Clase / Interfaz | Capa | Descripción |
+|---|---|---|
+| `Snack.java` | Dominio | Misma lógica de V1, con el método extra `escribirSnack()` para serializar a CSV |
+| `IServicioSnacks.java` | Servicio | Interfaz con los contratos: `agregarSnack()`, `mostrarSnacks()`, `getSnacks()` |
+| `ServicioSnacksLista.java` | Servicio | Implementación que gestiona el inventario en una lista estática en memoria |
+| `ServicioSnacksArchivos.java` | Servicio | Implementación que persiste el inventario en `snacks.txt`. Crea el archivo si no existe y carga los datos al inicio |
+| `MaquinaSnacks.java` | Presentación | Clase principal refactorizada que usa `IServicioSnacks` (inyección de dependencia), con opción adicional para listar inventario |
+
+> **💡 Cambiar entre implementaciones** es tan sencillo como comentar/descomentar una línea en `presentacion/MaquinaSnacks.java`:
+> ```java
+> // IServicioSnacks servicioSnacks = new ServicioSnacksLista();  // ← en memoria
+> IServicioSnacks servicioSnacks = new ServicioSnacksArchivos();  // ← con archivos
+> ```
 
 ## 💻 Requisitos
 
 - **Java Development Kit (JDK)** 11 o superior
-- Un IDE como IntelliJ IDEA, Eclipse, o NetBeans (opcional)
+- Un IDE como IntelliJ IDEA, Eclipse, o NetBeans (recomendado)
 
-## 🔧 Instalación
+## 🔧 Instalación y Ejecución
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/luisflorez20/maquina_snacks.git
-   cd maquina_snacks
-   ```
+### 1. Clonar el repositorio
 
-2. **Compilar el proyecto**:
-   ```bash
-   javac src/*.java -d out
-   ```
+```bash
+git clone https://github.com/luisflorez20/maquina_snacks.git
+cd maquina_snacks
+```
 
-3. **Ejecutar la aplicación**:
-   ```bash
-   java -cp out MaquinaSnacks
-   ```
+### 2. Versión 1 — En Memoria
+
+```bash
+# Compilar
+javac src/MaquinaSnacks.java src/Snack.java src/Snacks.java -d out
+
+# Ejecutar
+java -cp out MaquinaSnacks
+```
+
+### 3. Versión 2 — Con persistencia en archivos
+
+```bash
+# Compilar
+javac -d out src/maquina_snacks_archivos/dominio/Snack.java \
+             src/maquina_snacks_archivos/servicio/IServicioSnacks.java \
+             src/maquina_snacks_archivos/servicio/ServicioSnacksLista.java \
+             src/maquina_snacks_archivos/servicio/ServicioSnacksArchivos.java \
+             src/maquina_snacks_archivos/presentacion/MaquinaSnacks.java
+
+# Ejecutar
+java -cp out maquina_snacks_archivos.presentacion.MaquinaSnacks
+```
+
+> **Nota**: Con IntelliJ IDEA basta con abrir el proyecto y ejecutar directamente la clase `MaquinaSnacks` deseada.
 
 ## 📖 Uso
 
-Al ejecutar la aplicación, verás el siguiente menú:
+Al ejecutar la aplicación (versión 2), verás:
 
 ```
-*** Maquina de Snacks ***
+ *** Maquina de Snacks ***
 --- Snacks en el Inventario ---
-Snack{idSnack=1, nombre='Papas Lays', precio=20.0}
-Snack{idSnack=2, nombre='Maquis', precio=30.0}
-Snack{idSnack=3, nombre='Inka Cola', precio=40.0}
+Snack{idSnack=1, nombre='Papas', precio=20.0}
+Snack{idSnack=2, nombre='InKaCola', precio=30.0}
+Snack{idSnack=3, nombre='Palomitas', precio=40.0}
 
 Menu:
 1. Comprar snacks
 2. Mostrar ticket
 3. Agregar Nuevo snack
-4. salir
+4. Inventario snacks
+5. salir
 Elige una opcion:
 ```
 
 ### Opciones del Menú
 
-1. **Comprar snacks**: 
-   - Ingresa el ID del snack que deseas comprar
-   - El snack se agregará a tu carrito
-   
-2. **Mostrar ticket**: 
-   - Visualiza todos los productos comprados
-   - Muestra el total acumulado
-   
-3. **Agregar Nuevo snack**: 
-   - Ingresa el nombre y precio del nuevo snack
-   - El producto se añadirá al inventario
-   
-4. **Salir**: 
-   - Termina la ejecución del programa
+| Opción | Acción |
+|---|---|
+| `1` | **Comprar snack** — Ingresa el ID del snack para agregarlo al carrito de compra |
+| `2` | **Mostrar ticket** — Visualiza todos los productos comprados y el total acumulado |
+| `3` | **Agregar snack** — Ingresa nombre y precio para añadir un nuevo producto al inventario |
+| `4` | **Inventario** — Muestra todos los snacks disponibles actualmente *(solo V2)* |
+| `5` | **Salir** — Termina la ejecución de la aplicación |
 
-## 📝 Ejemplo de Uso
+## 📝 Ejemplo de Sesión
 
 ```
+Elige una opcion: 1
 Que snack quieres comprar (id)? 1
-Snack agregado: Snack{idSnack=1, nombre='Papas Lays', precio=20.0}
+Snack agregado: Snack{idSnack=1, nombre='Papas', precio=20.0}
 
+Elige una opcion: 1
 Que snack quieres comprar (id)? 3
-Snack agregado: Snack{idSnack=3, nombre='Inka Cola', precio=40.0}
+Snack agregado: Snack{idSnack=3, nombre='Palomitas', precio=40.0}
 
+Elige una opcion: 2
 *** Ticket de Venta ***
-	- Papas Lays - $20.0
-	- Inka Cola - $40.0
+	- Papas - $20.0
+	- Palomitas - $40.0
 	Total de ventas: $60.0
+
+Elige una opcion: 3
+Nombre del snack: Doritos
+Precio: 25.0
+Tu snack se ha agregado correctamente:
+--- Snacks en el Inventario ---
+Snack{idSnack=1, nombre='Papas', precio=20.0}
+Snack{idSnack=2, nombre='InKaCola', precio=30.0}
+Snack{idSnack=3, nombre='Palomitas', precio=40.0}
+Snack{idSnack=4, nombre='Doritos', precio=25.0}
 ```
 
-## 🎯 Características Técnicas
+## 🎯 Conceptos Aplicados
 
-- **Generación Automática de IDs**: Los snacks tienen IDs únicos incrementales
-- **Persistencia en Memoria**: El inventario se mantiene durante la sesión
-- **Validación de Entrada**: Verifica que los IDs ingresados existan
-- **Manejo de Excepciones**: Captura y gestiona errores de entrada
-- **Diseño Modular**: Separación clara de responsabilidades entre clases
+- **Programación Orientada a Objetos**: Encapsulación, herencia implícita, polimorfismo vía interfaces
+- **Interfaz `IServicioSnacks`**: Abstracción del servicio de inventario, facilita la inyección de dependencias
+- **Bloque estático inicializador**: Carga de datos al inicializar la clase
+- **Generación automática de IDs**: Contador estático incremental en la clase `Snack`
+- **Manejo de archivos**: `FileWriter`, `PrintWriter` para escritura; `Files.readAllLines()` para lectura
+- **Switch expressions (Java 14+)**: Sintaxis moderna con `->`
+- **Text Blocks (Java 15+)**: Uso de `"""` para los menús de consola
+- **Manejo de Excepciones**: Bloques `try-catch-finally` para robustez
 
 ## 🛠️ Mejoras Futuras
 
-- [ ] Persistencia de datos en archivos o base de datos
-- [ ] Control de stock y cantidades
+- [ ] Control de stock y cantidades por producto
 - [ ] Sistema de pago con cálculo de cambio
-- [ ] Interfaz gráfica (GUI)
-- [ ] Categorización de productos
+- [ ] Persistencia en base de datos (ej: SQLite con JDBC)
+- [ ] Interfaz gráfica (JavaFX o Swing)
+- [ ] Categorización y filtrado de productos
 - [ ] Sistema de descuentos y promociones
-- [ ] Registro de historial de ventas
+- [ ] Registro de historial de ventas con fecha y hora
+- [ ] Pruebas unitarias con JUnit
 
 ## 👨‍💻 Autor
 
@@ -164,10 +215,6 @@ Las contribuciones son bienvenidas. Si deseas mejorar este proyecto:
 3. Realiza tus cambios y haz commit (`git commit -m 'Agregar nueva característica'`)
 4. Sube los cambios a tu rama (`git push origin feature/NuevaCaracteristica`)
 5. Abre un Pull Request
-
-## 📞 Contacto
-
-Si tienes preguntas o sugerencias sobre este proyecto, no dudes en contactarme a través de GitHub.
 
 ---
 
