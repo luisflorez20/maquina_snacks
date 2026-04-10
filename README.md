@@ -18,12 +18,12 @@ Este proyecto implementa un sistema completo de máquina expendedora que gestion
 
 ## 🚀 Tecnologías Utilizadas
 
-- **Lenguaje**: Java
+- **Lenguaje**: Java 21
 - **Paradigma**: Programación Orientada a Objetos (POO)
 - **Colecciones**: `ArrayList`, `List` para gestión de inventario
 - **E/S**: `Scanner` para entrada de datos, `FileWriter` / `Files` para persistencia
 - **Serialización**: Interfaz `Serializable` en el modelo de dominio
-- **Diseño**: Interfaces, capas de arquitectura (Dominio, Servicio, Presentación)
+- **Diseño**: Interfaces, capas de arquitectura (Dominio, Servicio, Presentación) y uso de paquetes.
 
 ## 📁 Estructura del Proyecto
 
@@ -32,11 +32,11 @@ maquina_snacks/
 │
 ├── src/
 │   │
-│   ├── 📂 (Versión 1 - En Memoria)
-│   ├── MaquinaSnacks.java          # Clase principal con menú interactivo
-│   ├── Snack.java                  # Modelo de datos del snack
-│   └── Snacks.java                 # Gestión estática del inventario en memoria
-│
+│   ├── 📂 maquina_snacks/ (Versión 1 - En Memoria - Empaquetado)
+│   │   ├── MaquinaSnacks.java          # Clase principal con menú interactivo
+│   │   ├── Snack.java                  # Modelo de datos del snack
+│   │   └── Snacks.java                 # Gestión estática del inventario en memoria
+│   │
 │   ├── 📂 maquina_snacks_archivos/ (Versión 2 - Con persistencia)
 │   │   ├── dominio/
 │   │   │   └── Snack.java          # Modelo de dominio con método escribirSnack()
@@ -47,13 +47,13 @@ maquina_snacks/
 │   │   └── presentacion/
 │   │       └── MaquinaSnacks.java  # Clase principal refactorizada (versión 2)
 │
-├── snacks.txt                      # Archivo de datos del inventario
+├── snacks.txt                      # Archivo de datos del inventario (generado automáticamente)
 └── out/                            # Archivos compilados
 ```
 
 ## 🏗️ Arquitectura del Código
 
-### Versión 1 — Inventario en Memoria
+### Versión 1 — Inventario en Memoria (`maquina_snacks`)
 
 | Clase | Descripción |
 |---|---|
@@ -61,17 +61,17 @@ maquina_snacks/
 | `Snacks.java` | Clase utilitaria con lista estática. Inicializa el inventario con snacks predefinidos y expone métodos para agregar y mostrar |
 | `MaquinaSnacks.java` | Clase principal. Gestiona el menú, las opciones del usuario y el flujo de compra mediante `switch` expressions |
 
-### Versión 2 — Arquitectura por Capas con Persistencia
+### Versión 2 — Arquitectura por Capas con Persistencia (`maquina_snacks_archivos`)
 
 | Clase / Interfaz | Capa | Descripción |
 |---|---|---|
 | `Snack.java` | Dominio | Misma lógica de V1, con el método extra `escribirSnack()` para serializar a CSV |
 | `IServicioSnacks.java` | Servicio | Interfaz con los contratos: `agregarSnack()`, `mostrarSnacks()`, `getSnacks()` |
 | `ServicioSnacksLista.java` | Servicio | Implementación que gestiona el inventario en una lista estática en memoria |
-| `ServicioSnacksArchivos.java` | Servicio | Implementación que persiste el inventario en `snacks.txt`. Crea el archivo si no existe y carga los datos al inicio |
+| `ServicioSnacksArchivos.java` | Servicio | Implementación corregida que persiste el inventario en `snacks.txt`. Crea el archivo si no existe, carga los datos correctamente en memoria al inicio y expone la lista para su uso en la aplicación |
 | `MaquinaSnacks.java` | Presentación | Clase principal refactorizada que usa `IServicioSnacks` (inyección de dependencia), con opción adicional para listar inventario |
 
-> **💡 Cambiar entre implementaciones** es tan sencillo como comentar/descomentar una línea en `presentacion/MaquinaSnacks.java`:
+> **💡 Cambiar entre implementaciones** es tan sencillo como comentar/descomentar una línea en `maquina_snacks_archivos/presentacion/MaquinaSnacks.java`:
 > ```java
 > // IServicioSnacks servicioSnacks = new ServicioSnacksLista();  // ← en memoria
 > IServicioSnacks servicioSnacks = new ServicioSnacksArchivos();  // ← con archivos
@@ -79,7 +79,7 @@ maquina_snacks/
 
 ## 💻 Requisitos
 
-- **Java Development Kit (JDK)** 11 o superior
+- **Java Development Kit (JDK)** 21
 - Un IDE como IntelliJ IDEA, Eclipse, o NetBeans (recomendado)
 
 ## 🔧 Instalación y Ejecución
@@ -94,28 +94,18 @@ cd maquina_snacks
 ### 2. Versión 1 — En Memoria
 
 ```bash
-# Compilar
-javac src/MaquinaSnacks.java src/Snack.java src/Snacks.java -d out
-
-# Ejecutar
-java -cp out MaquinaSnacks
+# Ejecutar desde tu IDE la clase:
+maquina_snacks.MaquinaSnacks
 ```
 
 ### 3. Versión 2 — Con persistencia en archivos
 
 ```bash
-# Compilar
-javac -d out src/maquina_snacks_archivos/dominio/Snack.java \
-             src/maquina_snacks_archivos/servicio/IServicioSnacks.java \
-             src/maquina_snacks_archivos/servicio/ServicioSnacksLista.java \
-             src/maquina_snacks_archivos/servicio/ServicioSnacksArchivos.java \
-             src/maquina_snacks_archivos/presentacion/MaquinaSnacks.java
-
-# Ejecutar
-java -cp out maquina_snacks_archivos.presentacion.MaquinaSnacks
+# Ejecutar desde tu IDE la clase:
+maquina_snacks_archivos.presentacion.MaquinaSnacks
 ```
 
-> **Nota**: Con IntelliJ IDEA basta con abrir el proyecto y ejecutar directamente la clase `MaquinaSnacks` deseada.
+> **Nota**: El proyecto ahora cuenta con la configuración de módulos de IntelliJ (`.iml`), por lo que al abrir la carpeta raíz en IntelliJ IDEA, el directorio `src/` será reconocido automáticamente y podrás ejecutar las clases principales dando clic derecho -> `Run`.
 
 ## 📖 Uso
 
@@ -132,8 +122,7 @@ Menu:
 1. Comprar snacks
 2. Mostrar ticket
 3. Agregar Nuevo snack
-4. Inventario snacks
-5. salir
+4. salir
 Elige una opcion:
 ```
 
@@ -143,9 +132,8 @@ Elige una opcion:
 |---|---|
 | `1` | **Comprar snack** — Ingresa el ID del snack para agregarlo al carrito de compra |
 | `2` | **Mostrar ticket** — Visualiza todos los productos comprados y el total acumulado |
-| `3` | **Agregar snack** — Ingresa nombre y precio para añadir un nuevo producto al inventario |
-| `4` | **Inventario** — Muestra todos los snacks disponibles actualmente *(solo V2)* |
-| `5` | **Salir** — Termina la ejecución de la aplicación |
+| `3` | **Agregar snack** — Ingresa nombre y precio para añadir un nuevo producto al inventario y archivo de texto |
+| `4` | **Salir** — Termina la ejecución de la aplicación |
 
 ## 📝 Ejemplo de Sesión
 
@@ -181,10 +169,11 @@ Snack{idSnack=4, nombre='Doritos', precio=25.0}
 - **Interfaz `IServicioSnacks`**: Abstracción del servicio de inventario, facilita la inyección de dependencias
 - **Bloque estático inicializador**: Carga de datos al inicializar la clase
 - **Generación automática de IDs**: Contador estático incremental en la clase `Snack`
-- **Manejo de archivos**: `FileWriter`, `PrintWriter` para escritura; `Files.readAllLines()` para lectura
+- **Manejo de archivos**: `FileWriter`, `PrintWriter` para escritura; `Files.readAllLines()` para lectura y corrección de extensiones de archivo (`.txt`).
 - **Switch expressions (Java 14+)**: Sintaxis moderna con `->`
 - **Text Blocks (Java 15+)**: Uso de `"""` para los menús de consola
 - **Manejo de Excepciones**: Bloques `try-catch-finally` para robustez
+- **Organización en Paquetes**: Separación lógica de las versiones del proyecto y sus capas (`dominio`, `servicio`, `presentacion`).
 
 ## 🛠️ Mejoras Futuras
 
